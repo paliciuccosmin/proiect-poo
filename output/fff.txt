@@ -1,0 +1,12 @@
+Output Step Information:
+   Step Number: 9
+   File Name: fff.txt
+   Title: titlu
+   Description: descriere
+
+Source Step Information:
+Step Type: TEXT_INPUT
+   Description: fdf
+   Enter text:    User Input: titlu
+------------------------------------
+------------------------------------
