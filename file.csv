@@ -1,0 +1,21 @@
+Test Case,Description
+1,Execute a flow with only TitleSteps.
+2,Execute a flow with only TextSteps.
+3,Execute a flow with TextInputSteps.
+4,Execute a flow with NumberInputSteps.
+5,Execute a flow with CalculusSteps.
+6,Execute a flow with TextFileInputSteps.
+7,Execute a flow with CsvFileInputSteps.
+8,Execute a flow with DisplaySteps referencing TextSteps.
+9,Execute a flow with OutputSteps referencing TextSteps.
+10,Execute a flow with multiple step types.
+11,Skip some steps during flow execution.
+12,Execute a flow with a division by zero (CalculusStep).
+13,Execute a flow with invalid operation (CalculusStep).
+14,Execute a flow with a non-existent file (TextFileInput).
+15,Execute a flow with analytics display.
+16,Execute multiple flows and check overall analytics.
+17,Execute a flow with errors and check error count.
+18,Execute a flow with DisplaySteps and check analytics.
+19,Execute a flow with OutputSteps and check analytics.
+20,Execute a flow and modify step data during execution.

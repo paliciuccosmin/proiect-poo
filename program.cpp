@@ -12,29 +12,43 @@
 
 using namespace std;
 
+//clasa abstracta pentru Step
 class Step {
 private:
     string stepType;
     int errorCount;
+    int skippedCount;
+    int completedCount;
 
 public:
-    Step(const string& type) : stepType(type), errorCount(0) {}
+    Step(const string& type) : stepType(type), errorCount(0), skippedCount(0), completedCount(0) {}
 
-    virtual void execute()= 0;
-    virtual ~Step() {}
-    virtual bool handleUserInput() { return false; }
+    virtual void execute() = 0;
     virtual void print() const = 0;
-    void incrementErrorCount() { errorCount++; } // Increment error count
-    void displayErrors() const { cout << "Errors: " << errorCount << endl; } // Display error count
 
-    // Getters and Setters
-    const string& getStepType() const { return stepType; }
+    void incrementErrorCount() { errorCount++; } 
+    void incrementSkippedCount() { skippedCount++; }
+    void incrementCompletedCount() { completedCount++; } 
+    void displayErrors() const { cout << "Errors: " << errorCount << endl; } 
+    void displaySkippedCount() const { cout << "Skipped: " << skippedCount << endl; } 
+    void displayCompletedCount() const { cout << "Completed: " << completedCount << endl; }
+
+
     int getErrorCount() const { return errorCount; }
-    void setStepType(const string& type) { stepType= type; }
+    int getSkippedCount() const { return skippedCount; }
+    int getCompletedCount() const { return completedCount; }
+
+    const string& getStepType() const { return stepType; }
+    void setStepType(const string& type) { stepType = type; }
     void setErrorCount(int count) { errorCount = count; }
+    void setSkippedCount(int count) { skippedCount = count; }
+    void setCompletedCount(int count) { completedCount = count; }
+
+    //destructor
+    virtual ~Step() {}
 };
 
-
+//clasa pentru TitleStep
 class TitleStep : public Step {
 private:
     string title;
@@ -50,15 +64,6 @@ public:
         cout << "   Subtitle: " << subtitle << endl;
         cout << "------------------------------------" << endl;
     }
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
-    }
     void print() const override {
         cout << "Step Type: " << getStepType() << endl;
         cout << "   Title: " << title << endl;
@@ -66,13 +71,12 @@ public:
         cout << "------------------------------------" << endl;
     }
 
-    // Getters and Setters
     const string& getTitle() const { return title; }
     const string& getSubtitle() const { return subtitle; }
     void setTitle(const string& titleValue) { title = titleValue; }
     void setSubtitle(const string& subtitleValue) { subtitle = subtitleValue; }
 };
-
+//clasa pentru TextStep
 class TextStep : public Step {
 private:
     string title;
@@ -81,21 +85,11 @@ private:
 public:
     TextStep(const string& titleValue, const string& copyValue)
         : Step("TEXT"), title(titleValue), copy(copyValue) {}
-
     void execute() override {
         cout << "Step Type: " << getStepType() << endl;
         cout << "   Title: " << title << endl;
         cout << "   Copy: " << copy << endl;
         cout << "------------------------------------" << endl;
-    }
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
     }
     void print() const override {
         cout << "Step Type: " << getStepType() << endl;
@@ -104,12 +98,13 @@ public:
         cout << "------------------------------------" << endl;
     }
 
-    // Getters and Setters
     const string& getTitle() const { return title; }
     const string& getCopy() const { return copy; }
     void setTitle(const string& titleValue) { title = titleValue; }
     void setCopy(const string& copyValue) { copy = copyValue; }
 };
+
+//clasa pentru TextInputStep
 class TextInputStep : public Step {
 private:
     string description;
@@ -131,18 +126,9 @@ public:
             cout << "   User Input: " << getUserInput() << endl;
             cout << "------------------------------------" << endl;
         } catch (const exception& e) {
+            incrementErrorCount();
             cerr << "Error: " << e.what() << endl;
         }
-    }
-
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
     }
 
     void print() const override {
@@ -152,13 +138,12 @@ public:
         cout << "------------------------------------" << endl;
     }
 
-    // Getters and Setters
     const string& getDescription() const { return description; }
     const string& getUserInput() const { return userInput; }
     void setDescription(const string& descriptionValue) { description = descriptionValue; }
     void setUserInput(const string& userInputValue) { userInput = userInputValue; }
 };
-
+//clasa pentru NumberInputStep
 class NumberInputStep : public Step {
 private:
     string description;
@@ -176,19 +161,13 @@ public:
             cout << "   User Input: " << getUserInput() << endl;
             cout << "------------------------------------" << endl;
         } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
+            if(e.what() == string("basic_ios::clear")) {
+                cerr << "Error: Invalid input." << endl;
+            } else {
+                cerr << "Error: " << e.what() << endl;
+            }
+            incrementErrorCount();
         }
-    }
-
-
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
     }
 
     void print() const override {
@@ -198,7 +177,6 @@ public:
         cout << "------------------------------------" << endl;
     }
 
-    // Getters and Setters
     NumberInputStep(const string& descriptionValue) : Step("NUMBER_INPUT"), description(descriptionValue) {}
     const string& getDescription() const { return description; }
     double getUserInput() const { return userInput; }
@@ -206,7 +184,7 @@ public:
     void setUserInput(double userInputValue) { userInput = userInputValue; }
     
 };
-
+//clasa pentru CalculusStep
 class CalculusStep : public Step {
 private:
     const NumberInputStep& operand1;
@@ -223,6 +201,7 @@ public:
             cout << "Step Type: " << getStepType() << endl;
             cout << "   Operation: " << operand1.getUserInput() << " " << operation << " " << operand2.getUserInput() << endl;
             double r;
+            //selectarea operatiei
             if (operation == "+") {
                 r = operand1.getUserInput() + operand2.getUserInput();
             } else if (operation == "-") {
@@ -230,6 +209,7 @@ public:
             } else if (operation == "*") {
                 r = operand1.getUserInput() * operand2.getUserInput();
             } else if (operation == "/") {
+                //caz de exceptie pentru impartirea la 0
                 if (operand2.getUserInput() != 0) {
                     r = operand1.getUserInput() / operand2.getUserInput();
                 } else {
@@ -246,18 +226,13 @@ public:
             cout << "   Result: " << result << endl;
             cout << "------------------------------------" << endl;
         } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
+            if(e.what() == "basic_ios::clear") {
+                cerr << "Error: Invalid input." << endl;
+            } else {
+                cerr << "Error: " << e.what() << endl;
+            }
+            incrementErrorCount();
         }
-    }
-
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
     }
 
     void print() const override {
@@ -266,8 +241,6 @@ public:
         cout << "   Result: " << result << endl;
         cout << "------------------------------------" << endl;
     }
-
-    // Getters and Setters
     const NumberInputStep& getOperand1() const { return operand1; }
     const NumberInputStep& getOperand2() const { return operand2; }
     const string& getOperation() const { return operation; }
@@ -276,6 +249,7 @@ public:
     void setResult(double resultValue) { result = resultValue; }
 };
 
+//clasa pentru TextFileInputStep
 class TextFileInputStep : public Step {
 private:
     string description;
@@ -296,18 +270,13 @@ public:
             cout << "   File Content: " << fileContent << endl;
             cout << "------------------------------------" << endl;
         } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
+            if(e.what() == "basic_ios::clear") {
+                cerr << "Error: Invalid input." << endl;
+            } else {
+                cerr << "Error: " << e.what() << endl;
+            }
+            incrementErrorCount();
         }
-    }
-
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
     }
 
     void print() const override {
@@ -318,7 +287,6 @@ public:
         cout << "------------------------------------" << endl;
     }
 
-    // Getters and Setters
     const string& getDescription() const { return description; }
     const string& getFileName() const { return fileName; }
     const string& getFileContent() const { return fileContent; }
@@ -327,6 +295,7 @@ public:
     void setFileContent(const string& fileContentValue) { fileContent = fileContentValue; }
 
 private:
+    // Metoda pentru citirea continutului fisierului
     void readFileContent() {
         try {
             ifstream fileStream(fileName);
@@ -340,12 +309,17 @@ private:
                 throw runtime_error("Unable to open file - " + fileName);
             }
         } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
+            if(e.what() == "basic_ios::clear") {
+                cerr << "Error: Invalid input." << endl;
+            } else {
+                cerr << "Error: " << e.what() << endl;
+            }
+            incrementErrorCount();
         }
     }
 };
 
-
+//clasa pentru CsvFileInputStep
 class CsvFileInputStep : public Step {
 private:
     string description;
@@ -366,18 +340,13 @@ public:
             cout << "   File Content: " << fileContent << endl;
             cout << "------------------------------------" << endl;
         } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
+            if(e.what() == "basic_ios::clear") {
+                cerr << "Error: Invalid input." << endl;
+            } else {
+                cerr << "Error: " << e.what() << endl;
+            }
+            incrementErrorCount();
         }
-    }
-
-    bool handleUserInput() override {
-        string decision;
-        cin >> decision;
-
-        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            return true;
-        }
-        return false;
     }
 
     void print() const override {
@@ -388,7 +357,6 @@ public:
         cout << "------------------------------------" << endl;
     }
 
-    // Getters and Setters
     const string& getDescription() const { return description; }
     const string& getFileName() const { return fileName; }
     const string& getFileContent() const { return fileContent; }
@@ -397,6 +365,7 @@ public:
     void setFileContent(const string& fileContentValue) { fileContent = fileContentValue; }
 
 private:
+    // Metoda pentru citirea continutului fisierului csv
     void readFileContent() {
         try {
             ifstream fileStream(fileName);
@@ -410,11 +379,16 @@ private:
                 throw runtime_error("Unable to open file - " + fileName);
             }
         } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
+            if(e.what() == "basic_ios::clear") {
+                cerr << "Error: Invalid input." << endl;
+            } else {
+                cerr << "Error: " << e.what() << endl;
+            }
+            incrementErrorCount();
         }
     }
 };
-
+//clasa pentru DisplayStep
 class DisplayStep : public Step {
         public:
             const Step& sourceStep;
@@ -429,23 +403,19 @@ class DisplayStep : public Step {
                     const_cast<Step&>(sourceStep).execute();
                     cout << "------------------------------------" << endl;
                 } catch (const exception& e) {
-                    cerr << "Error: " << e.what() << endl;
+                   if(e.what() == "basic_ios::clear") {
+                        cerr << "Error: Invalid input." << endl;
+                    } else {
+                         cerr << "Error: " << e.what() << endl;
+                     }
+                    incrementErrorCount();
                 }
-            }
-            bool handleUserInput() override {
-                string decision;
-                cin >> decision;
-
-                if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                    return true;
-                }
-                return false;
             }
             void print () const override {
                 return;
             }
 };
-
+//clasa pentru OutputStep
 class OutputStep : public Step {
         public:
             int stepNumber;
@@ -497,17 +467,13 @@ class OutputStep : public Step {
 
                     cout << "------------------------------------" << endl;
                 } catch (const exception& e) {
-                    cerr << "Error: " << e.what() << endl;
-                }
-            }
-            bool handleUserInput() override {
-                string decision;
-                cin >> decision;
-
-                if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                    return true;
-                }
-                return false;
+                   if(e.what() == "basic_ios::clear") {
+                        cerr << "Error: Invalid input." << endl;
+                    } else {
+                        cerr << "Error: " << e.what() << endl;
+                    }
+                    incrementErrorCount();
+                    }
             }
             void print () const override {
                 return;
@@ -515,6 +481,7 @@ class OutputStep : public Step {
 
         };
 
+//clasa pentru EndStep
 class EndStep : public Step {
 public:
     EndStep() : Step("END") {}
@@ -532,13 +499,11 @@ public:
     string name;
     vector<Step*> steps;
 
-    // Analytics counters
+    // Variabilele pentru analytics
     int startedCount;
     int completedCount;
     int skippedCount;
     int errorCount;
-
-    // Function to increment the error count
 
     Flow(const string& flowName)
         : name(flowName), startedCount(0), completedCount(0), skippedCount(0), errorCount(0) {}
@@ -554,7 +519,7 @@ public:
     }
 
     void run() {
-        startedCount++; // Increment the flow started count
+        startedCount++;
 
         tm timestamp;
         time_t now = time(0);
@@ -562,37 +527,37 @@ public:
 
         cout << "Flow Name: " << name << endl;
         cout << "Timestamp: "
-                  << timestamp.tm_year + 1900 << '-'
-                  << timestamp.tm_mon + 1 << '-'
-                  << timestamp.tm_mday << ' '
-                  << timestamp.tm_hour << ':'
-                  << timestamp.tm_min << ':'
-                  << timestamp.tm_sec << endl;
+             << timestamp.tm_year + 1900 << '-'
+             << timestamp.tm_mon + 1 << '-'
+             << timestamp.tm_mday << ' '
+             << timestamp.tm_hour << ':'
+             << timestamp.tm_min << ':'
+             << timestamp.tm_sec << endl;
         cout << "------------------------------------" << endl;
 
         for (auto& step : steps) {
-            step->execute();
-             string decision;
-            cout << "Do you want to proceed to the next step? (yes/no): ";
-            // Allow the user to handle the current step's input
-            bool inputHandled = step->handleUserInput();
-
-            // Optionally, add logic to check whether to proceed to the next step or skip
-            if (inputHandled) {
-
-                if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                    cout << "Skipping the current step." << endl;
-                    skippedCount++; // Increment the skipped count
-                    continue; // Skip to the next iteration of the loop
-                }
+            // Verificam daca vrea sa sara peste pas sau sa il execute
+            cout << "Step: " << step->getStepType() << endl;
+            cout << "Do you want to skip to the next step? (yes(1)/no(0)): ";
+            int decision;
+            cin >> decision;
+            if (decision == 1) {
+                cout << "Skipping the current step." << endl;
+                step->incrementSkippedCount();
+                skippedCount++;
+                continue;
+            }
+            if (decision == 0) {
+                step->execute();
+                step->incrementCompletedCount();
             }
         }
 
-        completedCount++; // Increment the flow completed count
+        completedCount++; // Incrementam numarul de flow-uri completate
         cout << "Flow completed." << endl;
     }
 
-    // Analytics methods
+    //Metoda pentru afisarea datelor
     void displayAnalytics() const {
         cout << "Analytics for Flow: " << name << endl;
         cout << "Started count: " << startedCount << endl;
@@ -605,6 +570,12 @@ public:
             cout << "Average errors per completed flow: " << averageErrors << endl;
         } else {
             cout << "Average errors per completed flow: N/A (no completed flows)" << endl;
+        }
+        for (const auto& step : steps) {
+            cout << "Step: " << step->getStepType() << endl;
+            step->displayErrors();
+            step->displaySkippedCount();
+            step->displayCompletedCount();
         }
     }
 };
@@ -621,7 +592,7 @@ public:
         }
     }
 
-    // Create a new flow
+
     void createFlow() {
         string flowName;
         cout << "Enter the name of the new flow: ";
@@ -632,7 +603,7 @@ public:
         addStepsToFlow(newFlow);
     }
 
-    // Delete an existing flow
+
     void deleteFlow() {
         string flowName;
         cout << "Enter the name of the flow to delete: ";
@@ -651,7 +622,6 @@ public:
         }
     }
 
-    // Run a selected flow
     void runFlow() {
         if (flows.empty()) {
             cout << "No flows available. Create a flow first." << endl;
@@ -669,6 +639,7 @@ public:
 
         if (choice > 0 && static_cast<size_t>(choice) <= flows.size()) {
             flows[choice - 1]->run();
+            flows[choice - 1]->displayAnalytics();
         } else {
             cout << "Invalid choice or canceled." << endl;
         }
@@ -728,6 +699,7 @@ public:
     }
 
 private:
+    // Metode pentru adaugarea pasilor in flow
     void addTitleStep(Flow* flow) {
         string title, subtitle;
         cout << "Enter the title for the Title Step: ";
@@ -776,7 +748,6 @@ private:
         flow->addStep(new CsvFileInputStep(description, fileName));
         cout << "CSV File Input Step added successfully." << endl;
     }
-    // Helper methods for adding specific steps
     void addNumberInputStep(Flow* flow) {
         string description;
         cout << "Enter the description for the Number Input Step: ";
@@ -787,7 +758,6 @@ private:
     }
     
     void addCalculusStep(Flow* flow) {
-        // You may need to modify this based on how you want to handle multiple Number Input Steps
         cout << "Select the first operand (Number Input Step):" << endl;
         displayNumberInputSteps(flow);
         int operand1Index = getUserChoice("Enter the index of the first operand: ", flow->steps.size());
@@ -817,7 +787,6 @@ private:
     }
 
     void addOutputStep(Flow* flow) {
-        // You may need to modify this based on how you want to handle multiple steps for output
         cout << "Select the source step for Output Step:" << endl;
         displayAllSteps(flow);
         int sourceIndex = getUserChoice("Enter the index of the source step: ", flow->steps.size());
@@ -836,7 +805,6 @@ private:
         cout << "Output Step added successfully." << endl;
     }
 
-    // Helper method to display all steps in the flow
     void displayAllSteps(const Flow* flow) {
         for (size_t i = 0; i < flow->steps.size(); ++i) {
             cout << i + 1 << ". ";
@@ -844,7 +812,6 @@ private:
         }
     }
 
-    // Helper method to display only Number Input Steps
     void displayNumberInputSteps(const Flow* flow) {
         for (size_t i = 0; i < flow->steps.size(); ++i) {
             if (dynamic_cast<const NumberInputStep*>(flow->steps[i]) != nullptr) {
@@ -854,7 +821,6 @@ private:
         }
     }
 
-    // Helper method to get a valid user choice
     int getUserChoice(const string& prompt, int maxChoice) {
         int choice;
         do {
@@ -865,7 +831,6 @@ private:
     }
 };
 
-// Update your main function to use the FlowManager
 int main() {
     FlowManager flowManager;
 
