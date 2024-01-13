@@ -13,346 +13,407 @@
 using namespace std;
 
 class Step {
-public:
+private:
     string stepType;
     int errorCount;
+
+public:
     Step(const string& type) : stepType(type), errorCount(0) {}
 
-    virtual void execute() const = 0;
+    virtual void execute()= 0;
     virtual ~Step() {}
     virtual bool handleUserInput() { return false; }
     virtual void print() const = 0;
     void incrementErrorCount() { errorCount++; } // Increment error count
     void displayErrors() const { cout << "Errors: " << errorCount << endl; } // Display error count
+
+    // Getters and Setters
+    const string& getStepType() const { return stepType; }
+    int getErrorCount() const { return errorCount; }
+    void setStepType(const string& type) { stepType= type; }
+    void setErrorCount(int count) { errorCount = count; }
 };
 
+
 class TitleStep : public Step {
-public:
+private:
     string title;
     string subtitle;
 
+public:
     TitleStep(const string& titleValue, const string& subtitleValue)
         : Step("TITLE"), title(titleValue), subtitle(subtitleValue) {}
 
-    void execute() const override {
-        cout << "Step Type: " << stepType << endl;
+    void execute() override {
+        cout << "Step Type: " << getStepType() << endl;
         cout << "   Title: " << title << endl;
         cout << "   Subtitle: " << subtitle << endl;
         cout << "------------------------------------" << endl;
     }
     bool handleUserInput() override {
         string decision;
-        cout << "Do you want to proceed to the next step? (yes/no): ";
         cin >> decision;
 
         if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            cout << "Skipping the current step." << endl;
             return true;
         }
         return false;
     }
     void print() const override {
-        cout << "Step Type: " << stepType << endl;
+        cout << "Step Type: " << getStepType() << endl;
         cout << "   Title: " << title << endl;
         cout << "   Subtitle: " << subtitle << endl;
         cout << "------------------------------------" << endl;
     }
+
+    // Getters and Setters
+    const string& getTitle() const { return title; }
+    const string& getSubtitle() const { return subtitle; }
+    void setTitle(const string& titleValue) { title = titleValue; }
+    void setSubtitle(const string& subtitleValue) { subtitle = subtitleValue; }
 };
 
 class TextStep : public Step {
-public:
+private:
     string title;
     string copy;
 
+public:
     TextStep(const string& titleValue, const string& copyValue)
         : Step("TEXT"), title(titleValue), copy(copyValue) {}
 
-    void execute() const override {
-        cout << "Step Type: " << stepType << endl;
+    void execute() override {
+        cout << "Step Type: " << getStepType() << endl;
         cout << "   Title: " << title << endl;
         cout << "   Copy: " << copy << endl;
         cout << "------------------------------------" << endl;
     }
     bool handleUserInput() override {
         string decision;
-        cout << "Do you want to proceed to the next step? (yes/no): ";
         cin >> decision;
 
         if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            cout << "Skipping the current step." << endl;
             return true;
         }
         return false;
     }
     void print() const override {
-        cout << "Step Type: " << stepType << endl;
+        cout << "Step Type: " << getStepType() << endl;
         cout << "   Title: " << title << endl;
         cout << "   Copy: " << copy << endl;
         cout << "------------------------------------" << endl;
     }
 
+    // Getters and Setters
+    const string& getTitle() const { return title; }
+    const string& getCopy() const { return copy; }
+    void setTitle(const string& titleValue) { title = titleValue; }
+    void setCopy(const string& copyValue) { copy = copyValue; }
 };
 class TextInputStep : public Step {
-    public:
+private:
     string description;
     string userInput;
 
+public:
     TextInputStep(const string& descriptionValue)
-    : Step("TEXT_INPUT"), description(descriptionValue) {}
+        : Step("TEXT_INPUT"), description(descriptionValue) {}
 
-    void execute() const override {
+    void execute() override {
         try {
-            cout << "Step Type: " << stepType << endl;
+            cout << "Step Type: " << getStepType() << endl;
             cout << "   Description: " << description << endl;
             cout << "   Enter text: ";
             cin.ignore();
             string input;
-            getline(cin,input);
-            const_cast<string&>(userInput) = input;
-            cout << "   User Input: " << userInput << endl;
+            getline(cin, input);
+            setUserInput(input);
+            cout << "   User Input: " << getUserInput() << endl;
             cout << "------------------------------------" << endl;
         } catch (const exception& e) {
             cerr << "Error: " << e.what() << endl;
         }
     }
+
     bool handleUserInput() override {
         string decision;
-        cout << "Do you want to proceed to the next step? (yes/no): ";
         cin >> decision;
 
         if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            cout << "Skipping the current step." << endl;
             return true;
-            }
+        }
         return false;
-}
-    void print () const override {
-        cout << "Step Type: " << stepType << endl;
+    }
+
+    void print() const override {
+        cout << "Step Type: " << getStepType() << endl;
         cout << "   Description: " << description << endl;
-        cout << "   User Input: " << userInput << endl;
+        cout << "   User Input: " << getUserInput() << endl;
         cout << "------------------------------------" << endl;
     }
+
+    // Getters and Setters
+    const string& getDescription() const { return description; }
+    const string& getUserInput() const { return userInput; }
+    void setDescription(const string& descriptionValue) { description = descriptionValue; }
+    void setUserInput(const string& userInputValue) { userInput = userInputValue; }
 };
 
 class NumberInputStep : public Step {
-    public:
+private:
     string description;
     double userInput;
 
-    NumberInputStep(const string& descriptionValue): Step("NUMBER_INPUT"), description(descriptionValue) {}
-    void execute() const override {
+public:
+    void execute() override {
         try {
-            cout << "Step Type: " << stepType << endl;
+            cout << "Step Type: " << getStepType() << endl;
             cout << "   Description: " << description << endl;
             cout << "   Enter a number: ";
             double input;
             cin >> input;
-            const_cast<double&>(userInput) = input;
-            cout << "   User Input: " << userInput << endl;
+            setUserInput(input);
+            cout << "   User Input: " << getUserInput() << endl;
             cout << "------------------------------------" << endl;
-            } catch (const exception& e) {
-                cerr << "Error: " << e.what() << endl;
-            }
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
+        }
     }
+
+
     bool handleUserInput() override {
         string decision;
-        cout << "Do you want to proceed to the next step? (yes/no): ";
         cin >> decision;
 
         if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-            cout << "Skipping the current step." << endl;
             return true;
         }
         return false;
-}
-    void print () const override {
-        cout << "Step Type: " << stepType << endl;
-        cout << "   Description: " << description << endl;
+    }
+
+    void print() const override {
+        cout << "Step Type: " << getStepType() << endl;
+        cout << "   Description: " <<description << endl;
         cout << "   User Input: " << userInput << endl;
         cout << "------------------------------------" << endl;
     }
+
+    // Getters and Setters
+    NumberInputStep(const string& descriptionValue) : Step("NUMBER_INPUT"), description(descriptionValue) {}
+    const string& getDescription() const { return description; }
+    double getUserInput() const { return userInput; }
+    void setDescription(const string& descriptionValue) { description = descriptionValue; }
+    void setUserInput(double userInputValue) { userInput = userInputValue; }
+    
 };
 
 class CalculusStep : public Step {
-public:
+private:
     const NumberInputStep& operand1;
     const NumberInputStep& operand2;
     string operation;
     double result;
-    CalculusStep(const NumberInputStep& operand1Value, const NumberInputStep& operand2Value, const string& operationValue)
-    : Step("CALCULUS"), operand1(operand1Value), operand2(operand2Value), operation(operationValue) {}
 
-    void execute() const override {
-    try {
-        cout << "Step Type: " << stepType << endl;
-        cout << "   Operation: " << operand1.userInput << " " << operation << " " << operand2.userInput << endl;
-        double r;
-        if (operation == "+") {
-            r = operand1.userInput + operand2.userInput;
-        } else if (operation == "-") {
-            r = operand1.userInput - operand2.userInput;
-        } else if (operation == "*") {
-            r = operand1.userInput * operand2.userInput;
-        } else if (operation == "/") {
-        if (operand2.userInput != 0) {
-            r = operand1.userInput / operand2.userInput;
-        } else {
-            throw runtime_error("Division by zero.");
-        }
+public:
+    CalculusStep(const NumberInputStep& operand1Value,const NumberInputStep& operand2Value, const string& operationValue)
+        : Step("CALCULUS"), operand1(operand1Value), operand2(operand2Value), operation(operationValue) {}
+
+    void execute() override {
+        try {
+            cout << "Step Type: " << getStepType() << endl;
+            cout << "   Operation: " << operand1.getUserInput() << " " << operation << " " << operand2.getUserInput() << endl;
+            double r;
+            if (operation == "+") {
+                r = operand1.getUserInput() + operand2.getUserInput();
+            } else if (operation == "-") {
+                r = operand1.getUserInput() - operand2.getUserInput();
+            } else if (operation == "*") {
+                r = operand1.getUserInput() * operand2.getUserInput();
+            } else if (operation == "/") {
+                if (operand2.getUserInput() != 0) {
+                    r = operand1.getUserInput() / operand2.getUserInput();
+                } else {
+                    throw runtime_error("Division by zero.");
+                }
             } else if (operation == "min") {
-        r = min(operand1.userInput, operand2.userInput);
+                r = min(operand1.getUserInput(), operand2.getUserInput());
             } else if (operation == "max") {
-        r = max(operand1.userInput, operand2.userInput);
+                r = max(operand1.getUserInput(), operand2.getUserInput());
             } else {
-        throw invalid_argument("Invalid operation.");
+                throw invalid_argument("Invalid operation.");
             }
-        const_cast<double&>(result) = r;
-        cout << "   Result: " << result << endl;
-        cout << "------------------------------------" << endl;
-    } catch (const exception& e) {
-        cerr << "Error: " << e.what() << endl;
-    }
+            result = r;
+            cout << "   Result: " << result << endl;
+            cout << "------------------------------------" << endl;
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
         }
-        bool handleUserInput() override {
-    string decision;
-    cout << "Do you want to proceed to the next step? (yes/no): ";
-    cin >> decision;
+    }
 
-    if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-        cout << "Skipping the current step." << endl;
-        return true;
-    }
-    return false;
+    bool handleUserInput() override {
+        string decision;
+        cin >> decision;
+
+        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
+            return true;
         }
-    void print () const override {
-        cout << "Step Type: " << stepType << endl;
-        cout << "   Operation: " << operand1.userInput << " " << operation << " " << operand2.userInput << endl;
+        return false;
+    }
+
+    void print() const override {
+        cout << "Step Type: " << getStepType() << endl;
+        cout << "   Operation: " << operand1.getUserInput() << " " << operation << " " << operand2.getUserInput() << endl;
         cout << "   Result: " << result << endl;
         cout << "------------------------------------" << endl;
     }
+
+    // Getters and Setters
+    const NumberInputStep& getOperand1() const { return operand1; }
+    const NumberInputStep& getOperand2() const { return operand2; }
+    const string& getOperation() const { return operation; }
+    double getResult() const { return result; }
+    void setOperation(const string& operationValue) { operation = operationValue; }
+    void setResult(double resultValue) { result = resultValue; }
 };
 
 class TextFileInputStep : public Step {
-    public:
-        string description;
-        string fileName;
-        string fileContent;
-
-        TextFileInputStep(const string& descriptionValue, const string& fileNameValue)
-    : Step("TEXT_FILE_INPUT"), description(descriptionValue), fileName(fileNameValue) {readFileContent();}
-
-        void execute() const override {
-            try {
-                cout << "Step Type: " << stepType << endl;
-                cout << "   Description: " << description << endl;
-                cout << "   File Name: " << fileName << endl;
-                cout << "   File Content: " << fileContent << endl;
-                cout << "------------------------------------" << endl;
-            } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
-            }
-        }
-
-        bool handleUserInput() override {
-            string decision;
-            cout << "Do you want to proceed to the next step? (yes/no): ";
-            cin >> decision;
-
-            if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                cout << "Skipping the current step." << endl;
-                return true;
-            }
-            return false;
-        }
-    void print () const override {
-        cout << "Step Type: " << stepType << endl;
-        cout << "   Description: " << description << endl;
-        cout << "   File Name: " << fileName << endl;
-        cout << "   File Content: " << fileContent << endl;
-        cout << "------------------------------------" << endl;
-    }
-
-    private:
-        void readFileContent() {
-            try {
-                ifstream fileStream(fileName);
-                if (fileStream.is_open()) {
-            string line;
-            while (getline(fileStream, line)) {
-                fileContent += line + "\n";
-            }
-            fileStream.close();
-                } else {
-            throw runtime_error("Unable to open file - " + fileName);
-                }
-            } catch (const exception& e) {
-                cerr << "Error: " << e.what() << endl;
-            }
-        }
-    
-    };
-
-
-class CsvFileInputStep : public Step {
-public:
+private:
     string description;
     string fileName;
     string fileContent;
 
-    CsvFileInputStep(const string& descriptionValue, const string& fileNameValue)
-        : Step("CSV_FILE_INPUT"), description(descriptionValue), fileName(fileNameValue) {
-                readFileContent();
-            }
+public:
+    TextFileInputStep(const string& descriptionValue, const string& fileNameValue)
+        : Step("TEXT_FILE_INPUT"), description(descriptionValue), fileName(fileNameValue) {
+        readFileContent();
+    }
 
-            void execute() const override {
-                try {
-                    cout << "Step Type: " << stepType << endl;
-                    cout << "   Description: " << description << endl;
-                    cout << "   File Name: " << fileName << endl;
-                    cout << "   File Content: " << fileContent << endl;
-                    cout << "------------------------------------" << endl;
-                } catch (const exception& e) {
-                    cerr << "Error: " << e.what() << endl;
-                }
-            }
+    void execute() override {
+        try {
+            cout << "Step Type: " << getStepType() << endl;
+            cout << "   Description: " << description << endl;
+            cout << "   File Name: " << fileName << endl;
+            cout << "   File Content: " << fileContent << endl;
+            cout << "------------------------------------" << endl;
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
+        }
+    }
 
-            bool handleUserInput() override {
-                string decision;
-                cout << "Do you want to proceed to the next step? (yes/no): ";
-                cin >> decision;
+    bool handleUserInput() override {
+        string decision;
+        cin >> decision;
 
-                if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                    cout << "Skipping the current step." << endl;
-                    return true;
-                }
-                return false;
-            }
-        void print () const override {
-        cout << "Step Type: " << stepType << endl;
+        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
+            return true;
+        }
+        return false;
+    }
+
+    void print() const override {
+        cout << "Step Type: " << getStepType() << endl;
         cout << "   Description: " << description << endl;
         cout << "   File Name: " << fileName << endl;
         cout << "   File Content: " << fileContent << endl;
         cout << "------------------------------------" << endl;
-        }
+    }
 
-        private:
-            void readFileContent() {
-                try {
-                    ifstream fileStream(fileName);
-                    if (fileStream.is_open()) {
-                        string line;
-                        while (getline(fileStream, line)) {
-                            fileContent += line + "\n";
-                        }
-                        fileStream.close();
-                    } else {
-                        throw runtime_error("Unable to open file - " + fileName);
-                    }
-                } catch (const exception& e) {
-                    cerr << "Error: " << e.what() << endl;
+    // Getters and Setters
+    const string& getDescription() const { return description; }
+    const string& getFileName() const { return fileName; }
+    const string& getFileContent() const { return fileContent; }
+    void setDescription(const string& descriptionValue) { description = descriptionValue; }
+    void setFileName(const string& fileNameValue) { fileName = fileNameValue; }
+    void setFileContent(const string& fileContentValue) { fileContent = fileContentValue; }
+
+private:
+    void readFileContent() {
+        try {
+            ifstream fileStream(fileName);
+            if (fileStream.is_open()) {
+                string line;
+                while (getline(fileStream, line)) {
+                    fileContent += line + "\n";
                 }
+                fileStream.close();
+            } else {
+                throw runtime_error("Unable to open file - " + fileName);
             }
-        };
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
+        }
+    }
+};
+
+
+class CsvFileInputStep : public Step {
+private:
+    string description;
+    string fileName;
+    string fileContent;
+
+public:
+    CsvFileInputStep(const string& descriptionValue, const string& fileNameValue)
+        : Step("CSV_FILE_INPUT"), description(descriptionValue), fileName(fileNameValue) {
+        readFileContent();
+    }
+
+    void execute() override {
+        try {
+            cout << "Step Type: " << getStepType() << endl;
+            cout << "   Description: " << description << endl;
+            cout << "   File Name: " << fileName << endl;
+            cout << "   File Content: " << fileContent << endl;
+            cout << "------------------------------------" << endl;
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
+        }
+    }
+
+    bool handleUserInput() override {
+        string decision;
+        cin >> decision;
+
+        if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
+            return true;
+        }
+        return false;
+    }
+
+    void print() const override {
+        cout << "Step Type: " << getStepType() << endl;
+        cout << "   Description: " << description << endl;
+        cout << "   File Name: " << fileName << endl;
+        cout << "   File Content: " << fileContent << endl;
+        cout << "------------------------------------" << endl;
+    }
+
+    // Getters and Setters
+    const string& getDescription() const { return description; }
+    const string& getFileName() const { return fileName; }
+    const string& getFileContent() const { return fileContent; }
+    void setDescription(const string& descriptionValue) { description = descriptionValue; }
+    void setFileName(const string& fileNameValue) { fileName = fileNameValue; }
+    void setFileContent(const string& fileContentValue) { fileContent = fileContentValue; }
+
+private:
+    void readFileContent() {
+        try {
+            ifstream fileStream(fileName);
+            if (fileStream.is_open()) {
+                string line;
+                while (getline(fileStream, line)) {
+                    fileContent += line + "\n";
+                }
+                fileStream.close();
+            } else {
+                throw runtime_error("Unable to open file - " + fileName);
+            }
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
+        }
+    }
+};
 
 class DisplayStep : public Step {
         public:
@@ -361,11 +422,11 @@ class DisplayStep : public Step {
             DisplayStep(const Step& sourceStepValue)
                 : Step("DISPLAY"), sourceStep(sourceStepValue) {}
 
-            void execute() const override {
+            void execute() override {
                 try {
-                    cout << "Step Type: " << stepType << endl;
+                    cout << "Step Type: " << getStepType() << endl;
                     cout << "   Displaying content of the previous step:" << endl;
-                    sourceStep.execute();
+                    const_cast<Step&>(sourceStep).execute();
                     cout << "------------------------------------" << endl;
                 } catch (const exception& e) {
                     cerr << "Error: " << e.what() << endl;
@@ -373,11 +434,9 @@ class DisplayStep : public Step {
             }
             bool handleUserInput() override {
                 string decision;
-                cout << "Do you want to proceed to the next step? (yes/no): ";
                 cin >> decision;
 
                 if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                    cout << "Skipping the current step." << endl;
                     return true;
                 }
                 return false;
@@ -400,9 +459,9 @@ class OutputStep : public Step {
                 : Step("OUTPUT"), stepNumber(stepNumberValue), fileName(fileNameValue),
                   title(titleValue), description(descriptionValue), sourceStep(sourceStepValue) {}
 
-            void execute() const override {
+            void execute() override {
                 try {
-                    cout << "Step Type: " << stepType << endl;
+                    cout << "Step Type: " << getStepType()<< endl;
                     cout << "   Step Number: " << stepNumber << endl;
                     cout << "   File Name: " << fileName << endl;
                     cout << "   Title: " << title << endl;
@@ -443,11 +502,9 @@ class OutputStep : public Step {
             }
             bool handleUserInput() override {
                 string decision;
-                cout << "Do you want to proceed to the next step? (yes/no): ";
                 cin >> decision;
 
                 if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
-                    cout << "Skipping the current step." << endl;
                     return true;
                 }
                 return false;
@@ -462,8 +519,8 @@ class EndStep : public Step {
 public:
     EndStep() : Step("END") {}
 
-    void execute() const override {
-        cout << "Step Type: " << stepType << endl;
+    void execute() override {
+        cout << "Step Type: " << getStepType()<< endl;
         cout << "   End of the flow." << endl;
         cout << "------------------------------------" << endl;
     }
@@ -515,15 +572,13 @@ public:
 
         for (auto& step : steps) {
             step->execute();
-
+             string decision;
+            cout << "Do you want to proceed to the next step? (yes/no): ";
             // Allow the user to handle the current step's input
             bool inputHandled = step->handleUserInput();
 
             // Optionally, add logic to check whether to proceed to the next step or skip
             if (inputHandled) {
-                string decision;
-                cout << "Do you want to proceed to the next step? (yes/no): ";
-                cin >> decision;
 
                 if (decision != "yes" || decision !="Y" || decision !="y" || decision !="YES" ) {
                     cout << "Skipping the current step." << endl;
@@ -785,7 +840,7 @@ private:
     void displayAllSteps(const Flow* flow) {
         for (size_t i = 0; i < flow->steps.size(); ++i) {
             cout << i + 1 << ". ";
-            cout << "Step Type: " << flow->steps[i]->stepType << endl;
+            cout << "Step Type: " << flow->steps[i]->getStepType()<< endl;
         }
     }
 
@@ -794,7 +849,7 @@ private:
         for (size_t i = 0; i < flow->steps.size(); ++i) {
             if (dynamic_cast<const NumberInputStep*>(flow->steps[i]) != nullptr) {
                 cout << i + 1 << ". ";
-                cout << dynamic_cast<const NumberInputStep*>(flow->steps[i])->description << endl;
+                cout << dynamic_cast<const NumberInputStep*>(flow->steps[i])->getDescription() << endl;
             }
         }
     }
